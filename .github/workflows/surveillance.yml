@@ -1,0 +1,43 @@
+name: Surveillance inondation
+
+on:
+  schedule:
+    # Toutes les heures, à la minute 17 (on évite les heures rondes,
+    # très chargées chez GitHub, ce qui cause des retards).
+    # Attention : l'heure est en UTC. 17 * * * * = à chaque heure.
+    - cron: '17 * * * *'
+  workflow_dispatch:      # permet aussi de le lancer à la main (bouton)
+
+permissions:
+  contents: write         # nécessaire pour sauvegarder etat_precedent.json
+
+jobs:
+  surveiller:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dépendances
+        run: pip install requests
+
+      - name: Lancer la surveillance
+        env:
+          GMAIL_ADRESSE: ${{ secrets.GMAIL_ADRESSE }}
+          GMAIL_MOT_DE_PASSE: ${{ secrets.GMAIL_MOT_DE_PASSE }}
+          GMAIL_DESTINATAIRE: ${{ secrets.GMAIL_DESTINATAIRE }}
+        run: python surveillance.py
+
+      - name: Mémoriser l'état pour la prochaine exécution
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add etat_precedent.json
+          git diff --staged --quiet || git commit -m "Mise à jour de l'état des stations"
+          git push
