@@ -32,7 +32,7 @@ FUSEAU_QUEBEC = ZoneInfo("America/Toronto")
 #  False = surveillance normale.
 #  >>> Remets a False apres avoir confirme la reception. <<<
 # ============================================================
-MODE_TEST_COURRIEL = True
+MODE_TEST_COURRIEL = False
 
 # ============================================================
 #  IDENTIFIANTS - lus depuis les Secrets GitHub
