@@ -7,7 +7,11 @@ Envoie un courriel quand une alerte se declenche.
 DIFFERENCE AVEC LA VERSION LOCALE :
   Les identifiants Gmail ne sont PLUS ecrits dans le code. Ils sont lus depuis
   les "Secrets" de GitHub (chiffres, invisibles dans le depot public).
-  -> os.environ.get("NOM_DU_SECRET")
+
+HEURE :
+  Les serveurs GitHub tournent en UTC. On convertit tous les affichages en
+  heure du Quebec (America/Toronto), qui gere automatiquement l'heure d'ete
+  (UTC-4) et d'hiver (UTC-5).
 
 Sources (publiques, gratuites, verifiees) :
   - Vigilance MSP : etat officiel des stations
@@ -23,6 +27,10 @@ import ssl
 import requests
 from email.mime.text import MIMEText
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# Fuseau horaire du Quebec (gere ete/hiver tout seul)
+FUSEAU_QUEBEC = ZoneInfo("America/Toronto")
 
 # ============================================================
 #  IDENTIFIANTS - lus depuis les Secrets GitHub (jamais en clair)
@@ -59,8 +67,13 @@ SMTP_SERVEUR = "smtp.gmail.com"
 SMTP_PORT = 587
 
 
+def maintenant_quebec():
+    """Retourne l'heure actuelle du Quebec, formatee (ete/hiver gere)."""
+    return datetime.now(FUSEAU_QUEBEC).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def journaliser(message):
-    print("[%s] %s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), message))
+    print("[%s] %s" % (maintenant_quebec(), message))
 
 
 # ============================================================
@@ -201,9 +214,9 @@ def main():
 
     # --- Envoi du courriel ---
     if messages:
-        corps = ("Alerte(s) d'inondation detectee(s) le %s :\n\n%s\n\n"
+        corps = ("Alerte(s) d'inondation detectee(s) le %s (heure du Quebec) :\n\n%s\n\n"
                  "Source officielle : https://vigilance.gouv.qc.ca") % (
-            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            maintenant_quebec(),
             "\n".join("- " + m for m in messages))
         try:
             if envoyer_courriel("ALERTE inondation - %d evenement(s)" % len(messages),
