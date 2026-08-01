@@ -4,14 +4,8 @@ SURVEILLANCE D'INONDATION - version GitHub Actions
 Deux capteurs : FLUVIAL (Vigilance MSP) + PLUVIAL (alertes ECCC, tout le Quebec)
 Envoie un courriel quand une alerte se declenche.
 
-DIFFERENCE AVEC LA VERSION LOCALE :
-  Les identifiants Gmail ne sont PLUS ecrits dans le code. Ils sont lus depuis
-  les "Secrets" de GitHub (chiffres, invisibles dans le depot public).
-
-HEURE :
-  Les serveurs GitHub tournent en UTC. On convertit tous les affichages en
-  heure du Quebec (America/Toronto), qui gere automatiquement l'heure d'ete
-  (UTC-4) et d'hiver (UTC-5).
+Les identifiants Gmail sont lus depuis les Secrets GitHub (jamais en clair).
+Les heures sont affichees a l'heure du Quebec (ete/hiver gere automatiquement).
 
 Sources (publiques, gratuites, verifiees) :
   - Vigilance MSP : etat officiel des stations
@@ -29,18 +23,26 @@ from email.mime.text import MIMEText
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# Fuseau horaire du Quebec (gere ete/hiver tout seul)
 FUSEAU_QUEBEC = ZoneInfo("America/Toronto")
 
 # ============================================================
-#  IDENTIFIANTS - lus depuis les Secrets GitHub (jamais en clair)
+#  INTERRUPTEUR DE TEST
+#  True  = envoie un courriel de test et s'arrete (pour verifier
+#          que l'envoi fonctionne depuis GitHub).
+#  False = surveillance normale.
+#  >>> Remets a False apres avoir confirme la reception. <<<
+# ============================================================
+MODE_TEST_COURRIEL = True
+
+# ============================================================
+#  IDENTIFIANTS - lus depuis les Secrets GitHub
 # ============================================================
 COURRIEL_EXPEDITEUR = os.environ.get("GMAIL_ADRESSE", "")
 MOT_DE_PASSE_APPLI = os.environ.get("GMAIL_MOT_DE_PASSE", "")
 COURRIEL_DESTINATAIRE = os.environ.get("GMAIL_DESTINATAIRE", "")
 
 # ============================================================
-#  ZONE SURVEILLEE - modifie librement
+#  ZONE SURVEILLEE
 # ============================================================
 BASSIN_FLUVIAL = "Chaudière"
 
@@ -61,14 +63,13 @@ NIVEAUX = {
 SEUIL_ALERTE = 1
 MOTS_PLUVIAL = ["pluie", "inondation", "orage", "averse"]
 
-FICHIER_ETAT = "etat_precedent.json"     # memorise entre les executions
+FICHIER_ETAT = "etat_precedent.json"
 
 SMTP_SERVEUR = "smtp.gmail.com"
 SMTP_PORT = 587
 
 
 def maintenant_quebec():
-    """Retourne l'heure actuelle du Quebec, formatee (ete/hiver gere)."""
     return datetime.now(FUSEAU_QUEBEC).strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -177,6 +178,22 @@ def sauver_etat(stations):
 #  PROGRAMME PRINCIPAL
 # ============================================================
 def main():
+    # --- Mode test : envoie un courriel et s'arrete ---
+    if MODE_TEST_COURRIEL:
+        journaliser("MODE TEST : envoi d'un courriel de verification depuis GitHub...")
+        try:
+            ok = envoyer_courriel(
+                "Test depuis GitHub - Surveillance d'inondation",
+                "Ceci est un courriel de test envoye depuis GitHub Actions le %s "
+                "(heure du Quebec).\n\nSi tu le recois, l'envoi automatique fonctionne "
+                "parfaitement dans le nuage.\n\nRemets MODE_TEST_COURRIEL = False pour "
+                "revenir a la surveillance normale." % maintenant_quebec())
+            if ok:
+                journaliser("Courriel de test envoye. Verifie ta boite Gmail.")
+        except Exception as e:
+            journaliser("ECHEC de l'envoi : %s" % e)
+        return
+
     journaliser("=== Surveillance d'inondation ===")
     messages = []
 
