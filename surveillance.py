@@ -2,10 +2,15 @@
 """
 SURVEILLANCE D'INONDATION - version GitHub Actions
 Deux capteurs : FLUVIAL (Vigilance MSP) + PLUVIAL (alertes ECCC, tout le Quebec)
-Envoie un courriel quand une alerte se declenche.
+Envoie un courriel UNIQUEMENT pour les evenements serieux ET nouveaux.
 
-Les identifiants Gmail sont lus depuis les Secrets GitHub (jamais en clair).
-Les heures sont affichees a l'heure du Quebec (ete/hiver gere automatiquement).
+AMELIORATIONS (anti-spam) :
+  1. SEVERITE : le capteur pluvial ne retient que les AVERTISSEMENTS officiels
+     (pas les veilles ni les bulletins speciaux, qui sont mineurs).
+  2. MEMOIRE : chaque evenement n'est signale QU'UNE FOIS. Tant qu'une alerte
+     reste active, elle n'est pas renotifiee a chaque execution.
+
+Identifiants Gmail lus depuis les Secrets GitHub. Heures a l'heure du Quebec.
 
 Sources (publiques, gratuites, verifiees) :
   - Vigilance MSP : etat officiel des stations
@@ -26,13 +31,16 @@ from zoneinfo import ZoneInfo
 FUSEAU_QUEBEC = ZoneInfo("America/Toronto")
 
 # ============================================================
-#  INTERRUPTEUR DE TEST
-#  True  = envoie un courriel de test et s'arrete (pour verifier
-#          que l'envoi fonctionne depuis GitHub).
-#  False = surveillance normale.
-#  >>> Remets a False apres avoir confirme la reception. <<<
+#  REGLAGES DE SENSIBILITE (pluvial)
 # ============================================================
-MODE_TEST_COURRIEL = False
+# Niveau minimal retenu :
+#   "avertissement" = seulement les avertissements confirmes (recommande)
+#   "tout"          = inclut aussi les veilles et bulletins (bcp plus de mails)
+NIVEAU_SEVERITE = "avertissement"
+
+# Pour ne garder QUE les evenements extremes, decommente la ligne suivante :
+# COULEURS_EXTREMES = ["orange", "rouge"]
+COULEURS_EXTREMES = []          # [] = toutes les couleurs
 
 # ============================================================
 #  IDENTIFIANTS - lus depuis les Secrets GitHub
@@ -41,14 +49,8 @@ COURRIEL_EXPEDITEUR = os.environ.get("GMAIL_ADRESSE", "")
 MOT_DE_PASSE_APPLI = os.environ.get("GMAIL_MOT_DE_PASSE", "")
 COURRIEL_DESTINATAIRE = os.environ.get("GMAIL_DESTINATAIRE", "")
 
-# ============================================================
-#  ZONE SURVEILLEE
-# ============================================================
 BASSIN_FLUVIAL = "Chaudière"
 
-# ============================================================
-#  Constantes techniques (verifiees)
-# ============================================================
 URL_VIGILANCE = ("https://geoegl.msp.gouv.qc.ca/apis/mapserver-vigilance/ws/"
                  "vigilance.fcgi?service=wfs&version=1.1.0&request=getfeature"
                  "&typename=stations_igo2_public&outputformat=CSV")
@@ -131,8 +133,23 @@ def analyser_fluvial(stations, etat_precedent):
 
 
 # ============================================================
-#  CAPTEUR 2 - PLUVIAL (tout le Quebec)
+#  CAPTEUR 2 - PLUVIAL (tout le Quebec, avertissements seulement)
 # ============================================================
+def est_pluviale_extreme(p):
+    """Vrai si l'alerte est pluviale ET assez serieuse pour notifier."""
+    nom = (p.get("alert_name_fr", "") + " " +
+           p.get("alert_short_name_fr", "")).lower()
+    if not any(m in nom for m in MOTS_PLUVIAL):
+        return False
+    # Filtre de severite : avertissements seulement (pas veilles/bulletins)
+    if NIVEAU_SEVERITE == "avertissement" and p.get("alert_type", "") != "warning":
+        return False
+    # Filtre de couleur (optionnel)
+    if COULEURS_EXTREMES and p.get("risk_colour_fr", "") not in COULEURS_EXTREMES:
+        return False
+    return True
+
+
 def alertes_pluviales_quebec():
     resp = requests.get(URL_ALERTES, params={
         "f": "json", "bbox": BBOX_QUEBEC, "limit": 1000}, timeout=30)
@@ -142,15 +159,14 @@ def alertes_pluviales_quebec():
         p = f.get("properties", {})
         if p.get("province", "") != "QC":
             continue
-        nom = (p.get("alert_name_fr", "") + " " +
-               p.get("alert_short_name_fr", "")).lower()
-        if not any(mot in nom for mot in MOTS_PLUVIAL):
+        if not est_pluviale_extreme(p):
             continue
-        cle = (p.get("feature_name_fr", ""), p.get("alert_name_fr", ""))
+        cle = "%s|%s" % (p.get("feature_name_fr", ""), p.get("alert_name_fr", ""))
         if cle in vus:
             continue
         vus.add(cle)
         resultats.append({
+            "cle": cle,
             "zone": p.get("feature_name_fr", "?"),
             "alerte": p.get("alert_name_fr", "?"),
             "couleur": p.get("risk_colour_fr", ""),
@@ -159,50 +175,46 @@ def alertes_pluviales_quebec():
 
 
 # ============================================================
-#  ETAT PERSISTANT
+#  ETAT PERSISTANT (fluvial + pluvial dans un seul fichier)
 # ============================================================
 def charger_etat():
+    """
+    Retourne (etat_fluvial, cles_pluviales_connues, pluvial_deja_initialise).
+    Gere l'ancien format (dict plat = fluvial seulement).
+    """
     if os.path.exists(FICHIER_ETAT):
         with open(FICHIER_ETAT, encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+            data = json.load(f)
+        if isinstance(data, dict) and "fluvial" in data:
+            return data.get("fluvial", {}), set(data.get("pluvial", [])), True
+        # ancien format : dict plat station->etat
+        return data, set(), False
+    return {}, set(), False
 
 
-def sauver_etat(stations):
-    etat = {sid: s["etat"] for sid, s in stations.items()}
+def sauver_etat(stations_fluv, cles_pluviales):
+    data = {
+        "fluvial": {sid: s["etat"] for sid, s in stations_fluv.items()},
+        "pluvial": sorted(cles_pluviales),
+    }
     with open(FICHIER_ETAT, "w", encoding="utf-8") as f:
-        json.dump(etat, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 # ============================================================
 #  PROGRAMME PRINCIPAL
 # ============================================================
 def main():
-    # --- Mode test : envoie un courriel et s'arrete ---
-    if MODE_TEST_COURRIEL:
-        journaliser("MODE TEST : envoi d'un courriel de verification depuis GitHub...")
-        try:
-            ok = envoyer_courriel(
-                "Test depuis GitHub - Surveillance d'inondation",
-                "Ceci est un courriel de test envoye depuis GitHub Actions le %s "
-                "(heure du Quebec).\n\nSi tu le recois, l'envoi automatique fonctionne "
-                "parfaitement dans le nuage.\n\nRemets MODE_TEST_COURRIEL = False pour "
-                "revenir a la surveillance normale." % maintenant_quebec())
-            if ok:
-                journaliser("Courriel de test envoye. Verifie ta boite Gmail.")
-        except Exception as e:
-            journaliser("ECHEC de l'envoi : %s" % e)
-        return
-
     journaliser("=== Surveillance d'inondation ===")
     messages = []
+    etat_fluvial, cles_pluv_avant, pluvial_initialise = charger_etat()
+    stations = {}
 
     # --- Capteur fluvial ---
     try:
         stations = charger_stations_fluviales(BASSIN_FLUVIAL)
-        etat_precedent = charger_etat()
-        premiere_fois = (len(etat_precedent) == 0)
-        alertes = analyser_fluvial(stations, etat_precedent)
+        premiere_fois = (len(etat_fluvial) == 0)
+        alertes = analyser_fluvial(stations, etat_fluvial)
         journaliser("Fluvial (%s) : %d stations, %d alerte(s)." % (
             BASSIN_FLUVIAL, len(stations), 0 if premiere_fois else len(alertes)))
         if not premiere_fois:
@@ -212,24 +224,36 @@ def main():
                 journaliser(">> " + m)
                 messages.append(m)
         else:
-            journaliser("Premiere execution : etat de reference enregistre.")
-        sauver_etat(stations)
+            journaliser("Premiere execution fluviale : etat de reference enregistre.")
     except Exception as e:
         journaliser("Erreur capteur fluvial : %s" % e)
 
-    # --- Capteur pluvial ---
+    # --- Capteur pluvial (avertissements seulement, avec memoire) ---
+    cles_pluv_actuelles = set()
     try:
-        pluviales = alertes_pluviales_quebec()
-        journaliser("Pluvial (Quebec) : %d zone(s) en alerte." % len(pluviales))
-        for a in pluviales:
-            coul = (" [%s]" % a["couleur"]) if a["couleur"] else ""
-            m = "PLUVIAL - %s : %s%s" % (a["zone"], a["alerte"], coul)
-            journaliser(">> " + m)
-            messages.append(m)
+        actuelles = alertes_pluviales_quebec()
+        cles_pluv_actuelles = {a["cle"] for a in actuelles}
+        journaliser("Pluvial (Quebec) : %d avertissement(s) actif(s)." % len(actuelles))
+        if not pluvial_initialise:
+            journaliser("Premiere execution pluviale : reference enregistree (aucun courriel).")
+        else:
+            nouvelles = [a for a in actuelles if a["cle"] not in cles_pluv_avant]
+            journaliser("Pluvial : %d NOUVEL(LE)(S) avertissement(s)." % len(nouvelles))
+            for a in nouvelles:
+                coul = (" [%s]" % a["couleur"]) if a["couleur"] else ""
+                m = "PLUVIAL - %s : %s%s" % (a["zone"], a["alerte"], coul)
+                journaliser(">> " + m)
+                messages.append(m)
     except Exception as e:
         journaliser("Erreur capteur pluvial : %s" % e)
 
-    # --- Envoi du courriel ---
+    # --- Sauvegarde de l'etat (fluvial + pluvial) ---
+    try:
+        sauver_etat(stations, cles_pluv_actuelles)
+    except Exception as e:
+        journaliser("Erreur sauvegarde etat : %s" % e)
+
+    # --- Envoi du courriel (seulement si nouveautes) ---
     if messages:
         corps = ("Alerte(s) d'inondation detectee(s) le %s (heure du Quebec) :\n\n%s\n\n"
                  "Source officielle : https://vigilance.gouv.qc.ca") % (
@@ -242,7 +266,7 @@ def main():
         except Exception as e:
             journaliser("ECHEC envoi courriel : %s" % e)
     else:
-        journaliser("Aucune alerte. Aucun courriel envoye.")
+        journaliser("Aucune nouveaute. Aucun courriel envoye.")
 
 
 if __name__ == "__main__":
