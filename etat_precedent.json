@@ -13,8 +13,5 @@
     "Scott": "Désactivée",
     "Beauceville": "État normal"
   },
-  "pluvial": [
-    "secteur de Low - Wakefield|alerte d'orages violents",
-    "secteur de Ville-Marie|alerte d'orages violents"
-  ]
+  "pluvial": []
 }
