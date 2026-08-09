@@ -13,8 +13,5 @@
     "Scott": "Désactivée",
     "Beauceville": "État normal"
   },
-  "pluvial": [
-    "secteur de Fort William - Shawville|alerte d'orages violents",
-    "secteur de Rapides-des-Joachims|alerte d'orages violents"
-  ]
+  "pluvial": []
 }
