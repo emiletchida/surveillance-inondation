@@ -13,9 +13,5 @@
     "Scott": "Désactivée",
     "Beauceville": "État normal"
   },
-  "pluvial": [
-    "Des parties de secteur de Lotbinière, secteur de Bécancour - Villeroy|alerte d'orages violents",
-    "Des parties de secteur de Low - Wakefield, secteur de Maniwaki - Gracefield, secteur de Rapides-des-Joachims, secteur de Fort William - Shawville|alerte d'orages violents",
-    "Des parties de secteur de Maniwaki - Gracefield|alerte d'orages violents"
-  ]
+  "pluvial": []
 }
