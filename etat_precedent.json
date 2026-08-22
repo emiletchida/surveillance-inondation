@@ -13,5 +13,15 @@
     "Scott": "État normal",
     "Beauceville": "État normal"
   },
-  "pluvial": []
+  "pluvial": [
+    "secteur d'Amos|avertissement de pluie",
+    "secteur de Joutel - Matagami|avertissement de pluie",
+    "secteur de La Sarre|avertissement de pluie",
+    "secteur de Lebel-sur-Quévillon|avertissement de pluie",
+    "secteur de Malartic|avertissement de pluie",
+    "secteur de Miquelon - Desmaraisville|avertissement de pluie",
+    "secteur de Rouyn|avertissement de pluie",
+    "secteur de Senneterre|avertissement de pluie",
+    "secteur de Val d'Or - Louvicourt|avertissement de pluie"
+  ]
 }
