@@ -14,9 +14,8 @@
     "Beauceville": "État normal"
   },
   "pluvial": [
-    "Des parties de Matane, secteur d'Amqui, secteur de Mont-Joli|alerte d'orages violents",
-    "Des parties de secteur de Lac-aux-Sables, secteur de Sainte-Anne-de-la-Pérade, secteur de Portneuf|alerte d'orages violents",
-    "Des parties de secteur de Montmagny - Saint-Jean-Port-Joli, secteur de Saint-Fabien - Saint-Pamphile|alerte d'orages violents",
-    "Des parties de secteur de Trois-Pistoles, Témiscouata, secteur Le Bic - Rimouski, secteur de la réserve faunique de Rimouski|alerte d'orages violents"
+    "Des parties de Matane|alerte d'orages violents",
+    "Des parties de Témiscouata, secteur de Mont-Joli, secteur Le Bic - Rimouski, secteur de la réserve faunique de Rimouski|alerte d'orages violents",
+    "Des parties de secteur de Kamouraska, secteur de Montmagny - Saint-Jean-Port-Joli, secteur de Saint-Fabien - Saint-Pamphile|alerte d'orages violents"
   ]
 }
