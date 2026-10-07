@@ -13,5 +13,12 @@
     "Scott": "État normal",
     "Beauceville": "État normal"
   },
-  "pluvial": []
+  "pluvial": [
+    "Des parties de secteur de Dorval Lodge|alerte d'orages violents",
+    "Des parties de secteur de Maniwaki - Gracefield|alerte d'orages violents",
+    "Des parties de secteur de Parent, secteur Le Domaine|alerte d'orages violents",
+    "Des parties de secteur de Rapides-des-Joachims|alerte d'orages violents",
+    "Des parties de secteur de Témiscaming|alerte d'orages violents",
+    "Des parties de secteur du réservoir Gouin, secteur de Val d'Or - Louvicourt|alerte d'orages violents"
+  ]
 }
