@@ -13,5 +13,21 @@
     "Scott": "État normal",
     "Beauceville": "État normal"
   },
-  "pluvial": []
+  "pluvial": [
+    "secteur de Châteauguay - La Prairie|avertissement de pluie",
+    "secteur de Hemmingford|avertissement de pluie",
+    "secteur de Huntingdon|avertissement de pluie",
+    "secteur de Lacolle|avertissement de pluie",
+    "secteur de Laval|avertissement de pluie",
+    "secteur de Longueuil - Varennes|avertissement de pluie",
+    "secteur de Saint-Hyacinthe - Acton Vale|avertissement de pluie",
+    "secteur de Saint-Jean - Marieville|avertissement de pluie",
+    "secteur de Saint-Rémi|avertissement de pluie",
+    "secteur de Sorel - Yamaska|avertissement de pluie",
+    "secteur de Soulanges|avertissement de pluie",
+    "secteur de Valleyfield - Beauharnois|avertissement de pluie",
+    "secteur de Vaudreuil|avertissement de pluie",
+    "secteur de Verchères - Beloeil|avertissement de pluie",
+    "secteur de l'île de Montréal|avertissement de pluie"
+  ]
 }
