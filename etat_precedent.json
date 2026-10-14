@@ -1,33 +1,17 @@
 {
   "fluvial": {
-    "Saint-Georges": "État normal",
-    "Saint-Joseph-de-Beauce": "État normal",
-    "Sainte-Marie": "État normal",
     "023427": "État normal",
-    "023429": "État normal",
     "023446": "État inconnu",
-    "Vallée-Jonction": "État normal",
     "023448": "État inconnu",
-    "Lévis": "État inconnu",
+    "Saint-Georges": "État normal",
+    "Beauceville": "État normal",
+    "Saint-Joseph-de-Beauce": "État normal",
+    "Vallée-Jonction": "État normal",
     "023402": "État normal",
+    "023429": "État normal",
+    "Sainte-Marie": "État normal",
     "Scott": "État normal",
-    "Beauceville": "État normal"
+    "Lévis": "État inconnu"
   },
-  "pluvial": [
-    "secteur de Châteauguay - La Prairie|avertissement de pluie",
-    "secteur de Hemmingford|avertissement de pluie",
-    "secteur de Huntingdon|avertissement de pluie",
-    "secteur de Lacolle|avertissement de pluie",
-    "secteur de Laval|avertissement de pluie",
-    "secteur de Longueuil - Varennes|avertissement de pluie",
-    "secteur de Saint-Hyacinthe - Acton Vale|avertissement de pluie",
-    "secteur de Saint-Jean - Marieville|avertissement de pluie",
-    "secteur de Saint-Rémi|avertissement de pluie",
-    "secteur de Sorel - Yamaska|avertissement de pluie",
-    "secteur de Soulanges|avertissement de pluie",
-    "secteur de Valleyfield - Beauharnois|avertissement de pluie",
-    "secteur de Vaudreuil|avertissement de pluie",
-    "secteur de Verchères - Beloeil|avertissement de pluie",
-    "secteur de l'île de Montréal|avertissement de pluie"
-  ]
+  "pluvial": []
 }
