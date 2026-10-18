@@ -7,11 +7,11 @@
     "Beauceville": "État normal",
     "Saint-Joseph-de-Beauce": "État normal",
     "Vallée-Jonction": "État normal",
-    "023402": "État normal",
-    "023429": "État normal",
     "Sainte-Marie": "État normal",
     "Scott": "État normal",
-    "Lévis": "État inconnu"
+    "Lévis": "État inconnu",
+    "023402": "État normal",
+    "023429": "État normal"
   },
   "pluvial": []
 }
