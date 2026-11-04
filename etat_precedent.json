@@ -14,13 +14,16 @@
     "Beauceville": "État normal"
   },
   "pluvial": [
-    "Baie-Comeau|avertissement de pluie verglaçante",
+    "secteur de Baie-Trinité|avertissement de pluie verglaçante",
     "secteur de Chutes-des-Passes - réservoir Pipmuacan|avertissement de pluie verglaçante",
     "secteur de Grande-Rivière - Cascapédia|avertissement de pluie verglaçante",
     "secteur de Labrieville|avertissement de pluie verglaçante",
     "secteur de Manic-3|avertissement de pluie verglaçante",
     "secteur de Manic-5|avertissement de pluie verglaçante",
     "secteur de Murdochville|avertissement de pluie verglaçante",
-    "secteur du Mont-Albert|avertissement de pluie verglaçante"
+    "secteur de Percé|avertissement de pluie verglaçante",
+    "secteur de Sept-Îles - Port-Cartier|avertissement de pluie verglaçante",
+    "secteur du Mont-Albert|avertissement de pluie verglaçante",
+    "secteur du parc national de Forillon - Gaspé|avertissement de pluie verglaçante"
   ]
 }
