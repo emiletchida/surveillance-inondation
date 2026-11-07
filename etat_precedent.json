@@ -13,5 +13,9 @@
     "Scott": "État normal",
     "Beauceville": "État normal"
   },
-  "pluvial": []
+  "pluvial": [
+    "secteur de Grande-Rivière - Cascapédia|avertissement de pluie verglaçante",
+    "secteur de Murdochville|avertissement de pluie verglaçante",
+    "secteur du Mont-Albert|avertissement de pluie verglaçante"
+  ]
 }
